@@ -1,0 +1,105 @@
+version: '3.8'
+
+x-node-defaults: &node-defaults
+  build: .
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        memory: 512M
+        cpus: '1.0'
+  healthcheck:
+    test: >
+      wget -qO- http://127.0.0.1:3001/
+      --post-data='{"jsonrpc":"2.0","id":1,"method":"getInfo","params":{}}'
+      || exit 1
+    interval: 15s
+    timeout: 5s
+    retries: 3
+    start_period: 30s
+  networks:
+    - misaka
+
+services:
+  node0:
+    <<: *node-defaults
+    container_name: misaka-node0
+    command: >
+      node dist/cli/index.js node start
+      --port 4001 --rpc-port 3001
+      --chain-id misaka-testnet-1
+      --peers node1:4002,node2:4003,node3:4004
+      --block-interval 5000
+    ports:
+      - "4001:4001"
+      - "127.0.0.1:3001:3001"
+    volumes:
+      - ./data/node0:/app/data
+      - ./keys:/app/keys:ro
+
+  node1:
+    <<: *node-defaults
+    container_name: misaka-node1
+    command: >
+      node dist/cli/index.js node start
+      --port 4002 --rpc-port 3002
+      --chain-id misaka-testnet-1
+      --peers node0:4001,node2:4003,node3:4004
+      --block-interval 5000
+    ports:
+      - "4002:4002"
+      - "127.0.0.1:3002:3002"
+    volumes:
+      - ./data/node1:/app/data
+      - ./keys:/app/keys:ro
+    healthcheck:
+      test: >
+        wget -qO- http://127.0.0.1:3002/
+        --post-data='{"jsonrpc":"2.0","id":1,"method":"getInfo","params":{}}'
+        || exit 1
+
+  node2:
+    <<: *node-defaults
+    container_name: misaka-node2
+    command: >
+      node dist/cli/index.js node start
+      --port 4003 --rpc-port 3003
+      --chain-id misaka-testnet-1
+      --peers node0:4001,node1:4002,node3:4004
+      --block-interval 5000
+    ports:
+      - "4003:4003"
+      - "127.0.0.1:3003:3003"
+    volumes:
+      - ./data/node2:/app/data
+      - ./keys:/app/keys:ro
+    healthcheck:
+      test: >
+        wget -qO- http://127.0.0.1:3003/
+        --post-data='{"jsonrpc":"2.0","id":1,"method":"getInfo","params":{}}'
+        || exit 1
+
+  node3:
+    <<: *node-defaults
+    container_name: misaka-node3
+    command: >
+      node dist/cli/index.js node start
+      --port 4004 --rpc-port 3004
+      --chain-id misaka-testnet-1
+      --peers node0:4001,node1:4002,node2:4003
+      --block-interval 5000
+    ports:
+      - "4004:4004"
+      - "127.0.0.1:3004:3004"
+    volumes:
+      - ./data/node3:/app/data
+      - ./keys:/app/keys:ro
+    healthcheck:
+      test: >
+        wget -qO- http://127.0.0.1:3004/
+        --post-data='{"jsonrpc":"2.0","id":1,"method":"getInfo","params":{}}'
+        || exit 1
+
+networks:
+  misaka:
+    driver: bridge

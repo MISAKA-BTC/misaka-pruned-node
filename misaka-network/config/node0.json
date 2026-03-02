@@ -1,0 +1,25 @@
+{
+  "chainId": "misaka-testnet-1",
+  "network": "testnet",
+  "listenHost": "0.0.0.0",
+  "listenPort": 4001,
+  "rpcPort": 3001,
+  "peers": [
+    "localhost:4002",
+    "localhost:4003",
+    "localhost:4004"
+  ],
+  "validatorKeyPath": "./keys/validator0.json",
+  "dataDir": "./data/node0",
+  "pruningWindow": 1000,
+  "feeTiers": [
+    { "maxAmount": 100000,  "fee": 0.5, "label": "0 < amount ≤ 0.1M" },
+    { "maxAmount": 500000,  "fee": 5,   "label": "0.1M < amount ≤ 0.5M" },
+    { "maxAmount": 1000000, "fee": 20,  "label": "0.5M < amount ≤ 1M" },
+    { "maxAmount": 5000000, "fee": 100, "label": "1M < amount ≤ 5M" },
+    { "maxAmount": 1e308,   "fee": 300, "label": "5M < amount" }
+  ],
+  "validators": [],
+  "blockInterval": 5000,
+  "checkpointInterval": 100
+}
